@@ -115,7 +115,7 @@ class TrackingCamera(bus: I2CBus) {
 }
 object TrackingCamera {
   private val ReadDeviceId = 0x58
-  private val SendDeviceId = 0xb0
+  private val SendDeviceId = 0x58
 }
 
 class CameraException(msg: String) extends RuntimeException(msg)
