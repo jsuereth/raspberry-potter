@@ -18,23 +18,17 @@ class TrackingCamera(bus: I2CBus) {
 
   /** Initializes the camera hardware. */
   def init(): Unit = {
-    sendCamera.write(0x30.toByte)
-    sendCamera.write(0x01.toByte)
-    Thread.sleep(10);
-    sendCamera.write(0x30.toByte)
-    sendCamera.write(0x08.toByte)
-    Thread.sleep(10);
-    sendCamera.write(0x06.toByte)
-    sendCamera.write(0x90.toByte)
-    Thread.sleep(10);
-    sendCamera.write(0x08.toByte)
-    sendCamera.write(0xC0.toByte)
-    Thread.sleep(10);
-    sendCamera.write(0x1A.toByte)
-    sendCamera.write(0x40.toByte)
-    Thread.sleep(10);
-    sendCamera.write(0x33.toByte)
-    sendCamera.write(0x33.toByte)
+    sendCamera.write(0x30, 0x01.toByte)
+    Thread.sleep(10)
+    sendCamera.write(0x30, 0x08.toByte)
+    Thread.sleep(10)
+    sendCamera.write(0x06, 0x90.toByte)
+    Thread.sleep(10)
+    sendCamera.write(0x08, 0xC0.toByte)
+    Thread.sleep(10)
+    sendCamera.write(0x1A, 0x40.toByte)
+    Thread.sleep(10)
+    sendCamera.write(0x33, 0x33.toByte)
     /*
      // IR sensor initialize
     Write_2bytes(0x30,0x01); delay(10);
@@ -56,6 +50,7 @@ class TrackingCamera(bus: I2CBus) {
 
 
   private def readPositionsAdruinoExample(): Seq[ExtendedTrackedObjectUpdate] = {
+    sendCamera.write(0x36.toByte)
     clearBuf()
     readCamera.read(0, buf, 0, 16) match {
       case 16 =>
