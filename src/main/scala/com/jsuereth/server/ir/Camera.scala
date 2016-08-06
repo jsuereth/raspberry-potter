@@ -12,32 +12,22 @@ import com.pi4j.io.i2c.I2CBus
   */
 class TrackingCamera(bus: I2CBus) {
   import TrackingCamera._
-  private val sendCamera = bus.getDevice(SendDeviceId)
-  private val readCamera = bus.getDevice(ReadDeviceId)
+  private val device = bus.getDevice(ReadDeviceId)
   private val buf = new Array[Byte](36)
 
   /** Initializes the camera hardware. */
   def init(): Unit = {
-    sendCamera.write(0x30, 0x01.toByte)
+    device.write(0x30, 0x01.toByte)
     Thread.sleep(10)
-    sendCamera.write(0x30, 0x08.toByte)
+    device.write(0x30, 0x08.toByte)
     Thread.sleep(10)
-    sendCamera.write(0x06, 0x90.toByte)
+    device.write(0x06, 0x90.toByte)
     Thread.sleep(10)
-    sendCamera.write(0x08, 0xC0.toByte)
+    device.write(0x08, 0xC0.toByte)
     Thread.sleep(10)
-    sendCamera.write(0x1A, 0x40.toByte)
+    device.write(0x1A, 0x40.toByte)
     Thread.sleep(10)
-    sendCamera.write(0x33, 0x33.toByte)
-    /*
-     // IR sensor initialize
-    Write_2bytes(0x30,0x01); delay(10);
-    Write_2bytes(0x30,0x08); delay(10);
-    Write_2bytes(0x06,0x90); delay(10);
-    Write_2bytes(0x08,0xC0); delay(10);
-    Write_2bytes(0x1A,0x40); delay(10);
-    Write_2bytes(0x33,0x33); delay(10);
-     */
+    device.write(0x33, 0x33.toByte)
   }
 
   def readPosition(): Seq[TrackedObjectUpdate] = {
@@ -48,11 +38,13 @@ class TrackingCamera(bus: I2CBus) {
 
   private def clearBuf(): Unit = java.util.Arrays.fill(buf, 0, 16, 0.toByte)
 
+  private def askForPositions(): Unit = device.write(PositionAddress.toByte)
+
 
   private def readPositionsAdruinoExample(): Seq[ExtendedTrackedObjectUpdate] = {
-    sendCamera.write(0x36.toByte)
+    askForPositions() 
     clearBuf()
-    readCamera.read(0, buf, 0, 16) match {
+    device.read(PositionAddress, buf, 0, 16) match {
       case 16 =>
         for(i <- 0 until 4) yield readExtendedObjectFromBuf(1 + (i*3))
       case n =>
@@ -63,8 +55,9 @@ class TrackingCamera(bus: I2CBus) {
 
   /** Reads camera positions when the camera is in basic reporting mode. */
   private def readPositionsBasic(): Seq[BasicTrackedObjectUpdate] = {
+    askForPositions
     clearBuf()
-    readCamera.read(0, buf, 0, 10) match {
+    device.read(PositionAddress, buf, 0, 10) match {
       case 10 =>
         def readTwoObjects(idx: Int): Seq[BasicTrackedObjectUpdate] = {
           // We have to carefully pull these out.
@@ -89,7 +82,7 @@ class TrackingCamera(bus: I2CBus) {
   /** Reads the camera positions when the camera is in extended reporting mode. */
   private def readPositionsExtended(): Seq[ExtendedTrackedObjectUpdate] = {
     clearBuf()
-    readCamera.read(0, buf, 0, 12) match {
+    device.read(PositionAddress, buf, 0, 12) match {
       case 6 =>
         for(i <- 0 until 4) yield readExtendedObjectFromBuf(i*3)
       case n =>
@@ -110,7 +103,7 @@ class TrackingCamera(bus: I2CBus) {
 }
 object TrackingCamera {
   private val ReadDeviceId = 0x58
-  private val SendDeviceId = 0x58
+  private val PositionAddress = 0x36
 }
 
 class CameraException(msg: String) extends RuntimeException(msg)
