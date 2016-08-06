@@ -7,12 +7,13 @@ sealed trait TrackedObjectUpdate {
   /** the y position of an object. (0-767) */
   def y: Int
   /** whether or not the reported position should be considered "empty" (i.e. no data). */
-  def isEmpty: Boolean = (x == 1023) && (y == 1023)
+  def isEmpty: Boolean
 }
 
 /** A basic update.  Only has (x,y) position in resolution 1024x768. */
 case class BasicTrackedObjectUpdate(x: Int, y: Int) extends TrackedObjectUpdate {
   override def toString = s"$x, $y"
+  override def isEmpty: Boolean = (x == 767) && (y == 767)
 }
 /**
   * An extended position.
@@ -21,4 +22,5 @@ case class BasicTrackedObjectUpdate(x: Int, y: Int) extends TrackedObjectUpdate 
   */
 case class ExtendedTrackedObjectUpdate(x: Int, y: Int, size: Int) extends TrackedObjectUpdate {
   override def toString = s"$x, $y, $size"
+  override def isEmpty: Boolean = (x == 767) && (y == 767) && (size == 15)
 }

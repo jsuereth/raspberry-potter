@@ -42,7 +42,7 @@ class TrackingCamera(bus: I2CBus) {
 
 
   private def readPositionsAdruinoExample(): Seq[ExtendedTrackedObjectUpdate] = {
-    askForPositions() 
+    askForPositions()
     clearBuf()
     device.read(PositionAddress, buf, 0, 16) match {
       case 16 =>
@@ -57,6 +57,7 @@ class TrackingCamera(bus: I2CBus) {
   private def readPositionsBasic(): Seq[BasicTrackedObjectUpdate] = {
     askForPositions
     clearBuf()
+    Thread.sleep(2L)
     device.read(PositionAddress, buf, 0, 10) match {
       case 10 =>
         def readTwoObjects(idx: Int): Seq[BasicTrackedObjectUpdate] = {
