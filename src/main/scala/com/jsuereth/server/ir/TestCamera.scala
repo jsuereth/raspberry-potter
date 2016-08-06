@@ -11,7 +11,7 @@ object TestCamera {
     // TODO - why have this separate?  Maybe make this know what it's doing.
     cam.init()
     val out = new PrintWriter(new FileWriter("pos.csv"))
-    def print(in: String): Unit = { out.print(in); System.out.print(in) }
+    def print(in: String): Unit = { out.print(in); System.out.print(in); out.flush(); }
     try {
       while(true) {
         val now = System.currentTimeMillis()
@@ -21,8 +21,8 @@ object TestCamera {
           (pos, idx) <- data.zipWithIndex
           if !pos.isEmpty
         } yield s"$now, $lasted, ${idx}, ${pos}\n"
-        if (toPrint.isEmpty) print(s"No update for $now\n")
-        else System.err.print(toPrint.mkString("\n"))
+        if (toPrint.isEmpty) System.err.print(s"No update for $now\n")
+        else print(toPrint.mkString("\n"))
         Thread.sleep(500)
       }
     } finally out.close()
