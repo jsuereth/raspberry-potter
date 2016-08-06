@@ -12,11 +12,14 @@ import com.pi4j.io.i2c.I2CBus
   */
 class TrackingCamera(bus: I2CBus) {
   import TrackingCamera._
+  // Obtain the camera on i2c
   private val device = bus.getDevice(ReadDeviceId)
+  // Create a buffer for pulling in the values on i2c
   private val buf = new Array[Byte](36)
 
   /** Initializes the camera hardware. */
   def init(): Unit = {
+    // TODO - figure out what all these are and document.
     device.write(0x30, 0x01.toByte)
     Thread.sleep(10)
     device.write(0x30, 0x08.toByte)
@@ -32,8 +35,7 @@ class TrackingCamera(bus: I2CBus) {
 
   def readPosition(): Seq[TrackedObjectUpdate] = {
     // TODO - example code shows reading 16 bytes but w/ extended object positions.....
-    //readPositionsExtended()
-    readPositionsAdruinoExample()
+    readPositionsExtended()
   }
 
   private def clearBuf(): Unit = java.util.Arrays.fill(buf, 0, 16, 0.toByte)
@@ -41,7 +43,7 @@ class TrackingCamera(bus: I2CBus) {
   private def askForPositions(): Unit = device.write(PositionAddress.toByte)
 
 
-  private def readPositionsAdruinoExample(): Seq[ExtendedTrackedObjectUpdate] = {
+  private def readPositionsExtended(): Seq[ExtendedTrackedObjectUpdate] = {
     askForPositions()
     clearBuf()
     device.read(PositionAddress, buf, 0, 16) match {
@@ -53,6 +55,7 @@ class TrackingCamera(bus: I2CBus) {
   }
 
 
+  // Note: Ths is untested!
   /** Reads camera positions when the camera is in basic reporting mode. */
   private def readPositionsBasic(): Seq[BasicTrackedObjectUpdate] = {
     askForPositions
@@ -79,23 +82,20 @@ class TrackingCamera(bus: I2CBus) {
         throw new CameraException(s"Failed to read basic positions from camera, only found $n bytes available")
     }
   }
-
-  /** Reads the camera positions when the camera is in extended reporting mode. */
-  private def readPositionsExtended(): Seq[ExtendedTrackedObjectUpdate] = {
-    clearBuf()
-    device.read(PositionAddress, buf, 0, 12) match {
-      case 6 =>
-        for(i <- 0 until 4) yield readExtendedObjectFromBuf(i*3)
-      case n =>
-        // Error!
-        throw new CameraException(s"Failed to read extended positions from camera, only found $n bytes available")
-    }
+  /** converts a byte to an integer, but assumes unsigned values. */
+  private def toUint(x: Byte): Int = {
+    val t = x.toInt
+    if (t < 0) t + 256
+    else t
   }
-  // Extended Object format
+
+
+  // Extended Object format.  We allow idx to point us at a random spot in the buffer, since we're not sure
+  // what the header might be AND we need to pull 4 possible tracked objects.
   private def readExtendedObjectFromBuf(idx: Int) = {
-    var x = buf(idx).toInt
-    var y = buf(idx+1).toInt
-    val xys = buf(idx+2)
+    var x = toUint(buf(idx))
+    var y = toUint(buf(idx+1))
+    val xys = toUint(buf(idx+2))
     val size = xys & 0x0F
     x += ((xys & 0x30) << 4)
     y += ((xys & 0xc0) << 2)
