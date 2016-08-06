@@ -17,10 +17,12 @@ object TestCamera {
         val now = System.currentTimeMillis()
         val data = cam.readPosition()
         val lasted = System.currentTimeMillis() - now
-        for {
+        val toPrint = for {
           (pos, idx) <- data.zipWithIndex
           if !pos.isEmpty
-        } print(s"$now, $lasted, ${idx}, ${pos}\n")
+        } yield s"$now, $lasted, ${idx}, ${pos}\n"
+        if (toPrint.isEmpty) print(s"No update for $now")
+        else print(toPrint.mkString("\n"))
         Thread.sleep(500)
       }
     } finally out.close()
