@@ -21,8 +21,8 @@ object TestCamera {
           (pos, idx) <- data.zipWithIndex
           if !pos.isEmpty
         } yield s"$now, $lasted, ${idx}, ${pos}\n"
-        if (toPrint.isEmpty) print(s"No update for $now")
-        else print(toPrint.mkString("\n"))
+        if (toPrint.isEmpty) print(s"No update for $now\n")
+        else System.err.print(toPrint.mkString("\n"))
         Thread.sleep(500)
       }
     } finally out.close()
