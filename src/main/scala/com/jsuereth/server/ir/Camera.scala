@@ -16,14 +16,15 @@ class TrackingCamera(bus: I2CBus) {
   private val device = bus.getDevice(ReadDeviceId)
   // Create a buffer for pulling in the values on i2c
   private val buf = new Array[Byte](36)
-
   /** Initializes the camera hardware. */
   def init(): Unit = {
     // TODO - figure out what all these are and document.
     device.write(0x30, 0x01.toByte)
     Thread.sleep(10)
+    // enable the camera.
     device.write(0x30, 0x08.toByte)
     Thread.sleep(10)
+    // Sensitivity settings?
     device.write(0x06, 0x90.toByte)
     Thread.sleep(10)
     device.write(0x08, 0xC0.toByte)
@@ -39,10 +40,7 @@ class TrackingCamera(bus: I2CBus) {
   }
 
   private def clearBuf(): Unit = java.util.Arrays.fill(buf, 0, 16, 0.toByte)
-
   private def askForPositions(): Unit = device.write(PositionAddress.toByte)
-
-
   private def readPositionsExtended(): Seq[ExtendedTrackedObjectUpdate] = {
     askForPositions()
     clearBuf()
@@ -53,8 +51,6 @@ class TrackingCamera(bus: I2CBus) {
         throw new CameraException(s"Failed to read basic positions from camera, only found $n bytes available")
     }
   }
-
-
   // Note: Ths is untested!
   /** Reads camera positions when the camera is in basic reporting mode. */
   private def readPositionsBasic(): Seq[BasicTrackedObjectUpdate] = {
@@ -88,8 +84,6 @@ class TrackingCamera(bus: I2CBus) {
     if (t < 0) t + 256
     else t
   }
-
-
   // Extended Object format.  We allow idx to point us at a random spot in the buffer, since we're not sure
   // what the header might be AND we need to pull 4 possible tracked objects.
   private def readExtendedObjectFromBuf(idx: Int) = {
