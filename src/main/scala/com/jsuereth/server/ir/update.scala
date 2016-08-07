@@ -9,6 +9,9 @@ sealed trait TrackedObjectUpdate {
   /** whether or not the reported position should be considered "empty" (i.e. no data). */
   def isEmpty: Boolean
 }
+object TrackedObjectUpdate {
+  val empty: TrackedObjectUpdate = ExtendedTrackedObjectUpdate(1023, 1023, 15)
+}
 
 /** A basic update.  Only has (x,y) position in resolution 1024x768. */
 case class BasicTrackedObjectUpdate(x: Int, y: Int) extends TrackedObjectUpdate {
