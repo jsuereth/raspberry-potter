@@ -9,7 +9,7 @@ import io.reactors.{Events, Signal}
   *
   * This class is effectively a controller for i2c.
   */
-object I2CController {
+object I2CController extends Runnable {
   private val cameraE = new Events.Emitter[CameraUpdate]
   /** A stream of camera update events. */
   def camera: Events[CameraUpdate] = cameraE
@@ -25,27 +25,26 @@ object I2CController {
   }
 
   /** This is the thread which will read updates from the camera. */
-  private object i2cThread extends Thread("i2c-controller") {
-    override def run(): Unit = try {
-      val bus = I2CFactory.getInstance(I2CBus.BUS_1)
-      val c = new com.jsuereth.server.ir.TrackingCamera(bus)
-      c.init()
-      while (true) {
-        val data = c.readPosition()
-        if (!data.forall(_.isEmpty)) {
-          val update = CameraUpdate(data, System.currentTimeMillis)
-          cameraE react update
-        }
-        // TODO - how long should we delay here?
+  final def run(): Unit = try {
+    val bus = I2CFactory.getInstance(I2CBus.BUS_1)
+    val c = new com.jsuereth.server.ir.TrackingCamera(bus)
+     c.init()
+    while (true) {
+      val data = c.readPosition()
+      if (!data.forall(_.isEmpty)) {
+        val update = CameraUpdate(data, System.currentTimeMillis)
+        cameraE react update
       }
-    } catch {
-      case t: Throwable => cameraE except t
+      // TODO - how long should we delay here?
     }
+  } catch {
+    case t: Throwable => cameraE except t
   }
 
-  def start(): Unit = {
-    i2cThread.setDaemon(true)
-    i2cThread.start()
+  def startAsThread(): Unit = {
+    val i2cthread = new Thread(I2CController, "i2c-controller")
+    i2cthread.setDaemon(true)
+    i2cthread.start()
   }
 }
 

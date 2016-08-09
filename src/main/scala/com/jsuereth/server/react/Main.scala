@@ -5,16 +5,14 @@ package com.jsuereth.server.react
   */
 object Main {
   def main(args: Array[String]): Unit = {
-    I2CController.start
     I2CController.trackedObjects onEvent { objs =>
       val msg = (for {
         (obj,idx) <- objs.zipWithIndex
+        if !obj.isEmpty
       } yield s"$idx, $obj").mkString("\n")
       System.err.print(s"--== Update ==--\n$msg\n")
     }
-    // TODO - wait until done?
-    while (true) {
-      Thread.sleep(1000L)
-    }
+    // Here we take over the main thread to run the controller right on it.
+    I2CController.run()
   }
 }
