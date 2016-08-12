@@ -24,14 +24,40 @@ class TrackingCamera(bus: I2CBus) {
     // enable the camera.
     device.write(0x30, 0x08.toByte)
     Thread.sleep(10)
-    // Sensitivity settings?
+    setSensitivtyMax()
+
+    // tell the camera we are ready for data...
+    device.write(0x33, 0x33.toByte)
+  }
+
+  def setSensitivityMarcan(): Unit = {
+    // Block 1
     device.write(0x06, 0x90.toByte)
     Thread.sleep(10)
     device.write(0x08, 0xC0.toByte)
     Thread.sleep(10)
+    // Block 2
     device.write(0x1A, 0x40.toByte)
+  }
+
+  def setSensitivtyHigh(): Unit = {
+    // Block 1
+    device.write(0x06, 0x90.toByte)
     Thread.sleep(10)
-    device.write(0x33, 0x33.toByte)
+    device.write(0x08, 0x41.toByte)
+    Thread.sleep(10)
+    // Block 2
+    device.write(0x1A, 0x40.toByte)
+  }
+
+  def setSensitivtyMax(): Unit = {
+    // Block 1
+    device.write(0x06, 0xFF.toByte)
+    Thread.sleep(10)
+    device.write(0x08, 0x0C.toByte)
+    Thread.sleep(10)
+    // Block 2
+    device.write(0x1A, 0x00.toByte)
   }
 
   def readPosition(): Seq[TrackedObjectUpdate] = {

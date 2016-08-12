@@ -16,6 +16,8 @@ object I2CController extends Runnable {
 
   /** Defines a new signal that returns the tracked object poisition for the various objects. */
   def trackedObjects: Signal[Seq[TrackedObjectUpdate]] = {
+    // TODO - Once a position "dies" we should kill the object, also ignore updates where all positions are empty,
+    // not updates where we have some positions....
     def empty = Seq.fill(4)(TrackedObjectUpdate.empty)
     cameraE.scanPast(empty) { (lastPost, event) =>
       for {
@@ -35,7 +37,7 @@ object I2CController extends Runnable {
         val update = CameraUpdate(data, System.currentTimeMillis)
         cameraE react update
       }
-      // TODO - how long should we delay here?
+      // TODO - how long should we delay here?  Should we delay at all?
     }
   } catch {
     case t: Throwable => cameraE except t
