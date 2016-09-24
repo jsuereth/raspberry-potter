@@ -12,4 +12,8 @@ resolvers ++= Seq(
     "https://oss.sonatype.org/content/repositories/releases")
 
 libraryDependencies ++= Seq(
-  "com.storm-enroute" %% "reactors" % "0.6")
+  "com.storm-enroute" %% "reactors" % "0.7-SNAPSHOT")
+
+libraryDependencies ++= Seq("org.specs2" %% "specs2-core" % "3.8.5" % "test")
+
+scalacOptions in Test ++= Seq("-Yrangepos")

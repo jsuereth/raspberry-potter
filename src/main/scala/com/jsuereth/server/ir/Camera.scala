@@ -21,7 +21,7 @@ class TrackingCamera(bus: I2CBus) {
     // TODO - figure out what all these are and document.
     device.write(0x30, 0x01.toByte)
     Thread.sleep(10)
-    // enable the camera.
+    // enable the camera.   
     device.write(0x30, 0x08.toByte)
     Thread.sleep(10)
     setSensitivtyMax()
