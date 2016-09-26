@@ -1,6 +1,6 @@
 package com.jsuereth.server.react
 
-import java.awt.Color
+import java.awt.{Color, Graphics}
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 
@@ -23,14 +23,20 @@ object Main {
     }
     tmp
   }
-
-  val historyImage = history map renderHistory
+  // An image of the "trails" of data we have. 1024x768 (matches camera).
+  val historyImage = {
+    // Re-use the same image and re-render every time we get a new camera tick.
+    val tmp = new Events.Mutable[BufferedImage](new BufferedImage(1024, 768, BufferedImage.TYPE_BYTE_GRAY))
+    history.mutate(tmp) { img => buf =>
+      drawHistory(buf, img.getGraphics)
+    }
+    tmp
+  }
 
   /** Draws the current history of tracked objects to an image by connecting points with lines. */
-  def renderHistory(buf: CircularBuffer[CameraUpdate]): BufferedImage = {
-    // TODO - Mutate an existing image rather than creating new memory each time?
-    val img = new BufferedImage(1024, 768, BufferedImage.TYPE_BYTE_GRAY)
-    val g = img.getGraphics
+  def drawHistory(buf: CircularBuffer[CameraUpdate], g: Graphics): Unit = {
+    g.setColor(Color.WHITE)
+    g.drawRect(0,0,1024,728)
     g.setColor(Color.BLACK)
     // TODO - Maybe not use straight lines?
     for {
@@ -38,8 +44,9 @@ object Main {
       (pobj, nobj) <- prev.objects zip next.objects
       if !(pobj.isEmpty || nobj.isEmpty)
     } g.drawLine(pobj.x, pobj.y, nobj.x, nobj.y)
-    img
   }
+
+
 
 
   def main(args: Array[String]): Unit = {
@@ -51,9 +58,10 @@ object Main {
       System.err.print(s"--== Update ==--\n$msg\n")
     }
     // Dump rendered image to a png file we can look at.
-    historyImage map { buf =>
-      ImageIO.write(buf, "png", new java.io.File("objects.png"))
-    }
+    //historyImage map { buf =>
+    //  ImageIO.write(buf, "png", new java.io.File("objects.png"))
+    //}
+
 
 
 

@@ -17,3 +17,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq("org.specs2" %% "specs2-core" % "3.8.5" % "test")
 
 scalacOptions in Test ++= Seq("-Yrangepos")
+
+
+// Attempt to control TV, etc.
+libraryDependencies ++= Seq("su.litvak.chromecast" % "api-v2" % "0.9.2")
