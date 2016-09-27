@@ -2,11 +2,16 @@ package com.jsuereth.server.react
 
 import java.awt.{Color, Graphics}
 import java.awt.image.BufferedImage
+import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
 import com.jsuereth.server.collections.CircularBuffer
 import com.jsuereth.server.ir.TrackedObjectUpdate
-import io.reactors.Events
+import io.reactors.{Events, ReactorSystem}
+import io.reactors.concurrent.Services.Clock
+
+import scala.concurrent.duration.Duration
+
 /**
   * Runs the main reactionary programming.
   */
@@ -50,6 +55,9 @@ object Main {
 
 
   def main(args: Array[String]): Unit = {
+    val system = ReactorSystem.default("clock")
+    val clock = new Clock(system)
+
     I2CController.camera onEvent { objs =>
       val msg = (for {
         (obj,idx) <- objs.objects.zipWithIndex
@@ -61,12 +69,19 @@ object Main {
     //historyImage map { buf =>
     //  ImageIO.write(buf, "png", new java.io.File("objects.png"))
     //}
-
+    val snapshotClock = clock.periodic(Duration(10, TimeUnit.SECONDS))
+    // TODO - drive the hardware using the clock against the ReactorSystem....
+    snapshotClock map { count =>
+     historyImage.once map { img =>
+       ImageIO.write(img, "png", new java.io.File(s"objects_${count}.png"))
+     }
+    }
 
 
 
 
     // Here we take over the main thread to run the controller right on it.
-    I2CController.run()
+    try I2CController.run()
+    finally system.shutdown()
   }
 }
