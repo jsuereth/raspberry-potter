@@ -69,7 +69,9 @@ object Main {
     //historyImage map { buf =>
     //  ImageIO.write(buf, "png", new java.io.File("objects.png"))
     //}
-    val snapshotClock = clock.periodic(Duration(10, TimeUnit.SECONDS))
+    val snapshotClock =
+      historyImage.scanPast(1) { (c,_) => c+1 }.toSignal(0).filter(_ % 20 == 0)
+      //clock.periodic(Duration(10, TimeUnit.SECONDS))
     // TODO - drive the hardware using the clock against the ReactorSystem....
     snapshotClock map { count =>
      historyImage.once map { img =>
