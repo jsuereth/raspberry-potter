@@ -15,7 +15,7 @@ object TrackedObjectUpdate {
 
 /** A basic update.  Only has (x,y) position in resolution 1024x768. */
 case class BasicTrackedObjectUpdate(x: Int, y: Int) extends TrackedObjectUpdate {
-  override def toString = s"$x, $y"
+  override def toString = s"? @ (${x}, ${y})"
   override def isEmpty: Boolean = (x == 1023) && (y == 1023)
 }
 /**
@@ -24,6 +24,6 @@ case class BasicTrackedObjectUpdate(x: Int, y: Int) extends TrackedObjectUpdate 
   * Has the location (x,y) in resolution 1024x768 space in addiiton to the "size" of the object, in 0-15 space.
   */
 case class ExtendedTrackedObjectUpdate(x: Int, y: Int, size: Int) extends TrackedObjectUpdate {
-  override def toString = s"$x, $y, $size"
+  override def toString = s"$size @ (${x}, ${y})"
   override def isEmpty: Boolean = (x == 1023) && (y == 1023) && (size == 15)
 }
