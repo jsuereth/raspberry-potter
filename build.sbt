@@ -15,6 +15,7 @@ resolvers ++= Seq(
 
 scalacOptions in Test ++= Seq("-Yrangepos")
 
+libraryDependencies += "com.google.cloud" % "google-cloud-speech" % "0.80.0-beta"
 
 mainClass in assembly := Some("com.jsuereth.server.ir.TestCamera")
 assemblyJarName in assembly := "wand.jar"
